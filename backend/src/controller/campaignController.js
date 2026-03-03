@@ -13,6 +13,11 @@ const createCampaign = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    const normalizedEndDate = new Date(`${endDate}T23:59:59.999Z`);
+    if (Number.isNaN(normalizedEndDate.getTime())) {
+      return res.status(400).json({ message: "Invalid end date" });
+    }
+
     // Get user details to include name
     const User = require("../models/user");
     const user = await User.findById(req.user.id);
@@ -28,7 +33,7 @@ const createCampaign = async (req, res) => {
       title,
       description,
       targetAmount,
-      endDate,
+      endDate: normalizedEndDate,
       creator: req.user.id,
       creatorName: user.name || user.email,
     };
@@ -55,8 +60,10 @@ const getAllCampaigns = async (req, res) => {
     if (status) filter.status = status;
     if (search) filter.title = { $regex: search, $options: "i" };
 
-    // Exclude expired campaigns (end date has passed)
-    filter.endDate = { $gt: new Date() };
+    // Exclude campaigns that ended before today (campaigns ending today remain visible)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    filter.endDate = { $gte: todayStart };
 
     // Sort by average rating (highest first), then by creation date
     const campaigns = await Campaign.find(filter)
@@ -104,7 +111,13 @@ const updateCampaign = async (req, res) => {
     campaign.title = req.body.title || campaign.title;
     campaign.description = req.body.description || campaign.description;
     campaign.targetAmount = req.body.targetAmount || campaign.targetAmount;
-    campaign.endDate = req.body.endDate || campaign.endDate;
+    if (req.body.endDate) {
+      const normalizedEndDate = new Date(`${req.body.endDate}T23:59:59.999Z`);
+      if (Number.isNaN(normalizedEndDate.getTime())) {
+        return res.status(400).json({ message: "Invalid end date" });
+      }
+      campaign.endDate = normalizedEndDate;
+    }
 
     // Update image if new file was uploaded
     if (req.file) {
