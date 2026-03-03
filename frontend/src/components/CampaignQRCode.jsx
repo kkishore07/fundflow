@@ -5,7 +5,7 @@ const CampaignQRCode = ({ campaignId, campaignTitle }) => {
   const [showQR, setShowQR] = useState(false);
   
   // Generate the full URL for the campaign
-  const campaignUrl = `${window.location.origin}/donate/${campaignId}`;
+  const campaignUrl = `${window.location.origin}/campaign/${campaignId}/donate`;
 
   const downloadQR = () => {
     const svg = document.getElementById(`qr-${campaignId}`);
@@ -35,71 +35,39 @@ const CampaignQRCode = ({ campaignId, campaignTitle }) => {
   };
 
   return (
-    <div style={{ marginTop: "10px" }}>
+    <div className="campaign-qr">
       <button 
         onClick={() => setShowQR(!showQR)}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-          fontSize: "14px"
-        }}
+        className="btn btn-secondary campaign-qr-toggle"
+        type="button"
       >
         {showQR ? "Hide QR Code" : "Share QR Code"}
       </button>
 
       {showQR && (
-        <div style={{
-          marginTop: "15px",
-          padding: "15px",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "8px",
-          textAlign: "center"
-        }}>
+        <div className="campaign-qr-panel">
           <QRCodeSVG 
             id={`qr-${campaignId}`}
             value={campaignUrl}
-            size={200}
+            size={180}
             level="H"
             includeMargin={true}
           />
-          <p style={{ 
-            marginTop: "10px", 
-            fontSize: "12px", 
-            color: "#6c757d",
-            wordBreak: "break-all"
-          }}>
+          <p className="campaign-qr-link">
             {campaignUrl}
           </p>
-          <div style={{ marginTop: "10px", display: "flex", gap: "10px", justifyContent: "center" }}>
+          <div className="campaign-qr-actions">
             <button 
               onClick={copyLink}
-              style={{
-                padding: "6px 12px",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
+              className="btn btn-primary"
+              type="button"
             >
               Copy Link
             </button>
             <button 
               onClick={downloadQR}
-              style={{
-                padding: "6px 12px",
-                backgroundColor: "#17a2b8",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
+              className="btn btn-secondary"
+              type="button"
             >
               Download QR
             </button>

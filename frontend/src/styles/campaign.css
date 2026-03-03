@@ -140,6 +140,10 @@ textarea.input {
     linear-gradient(120deg, #f8fafc 0%, #edf2ff 100%);
 }
 
+.explore-page .dashboard-main {
+  max-width: 1240px;
+}
+
 .explore-hero {
   display: flex;
   flex-direction: column;
@@ -190,8 +194,10 @@ textarea.input {
 
 .explore-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 360px));
   gap: 20px;
+  justify-content: center;
+  align-items: stretch;
 }
 
 .explore-card {
@@ -203,6 +209,7 @@ textarea.input {
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
 }
 
 .explore-card:hover {
@@ -216,7 +223,7 @@ textarea.input {
 
 .explore-card-image {
   width: 100%;
-  height: 190px;
+  height: 210px;
   object-fit: cover;
   display: block;
 }
@@ -253,7 +260,7 @@ textarea.input {
 .explore-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
 }
 
@@ -261,6 +268,10 @@ textarea.input {
   font-size: 17px;
   font-weight: 700;
   color: #0f172a;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .explore-rating-count {
@@ -286,6 +297,11 @@ textarea.input {
   font-size: 13px;
   color: #475569;
   line-height: 1.5;
+  min-height: 58px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .explore-creator {
@@ -295,17 +311,55 @@ textarea.input {
 
 .explore-progress {
   margin-top: 4px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
 }
 
 .explore-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-top: auto;
 }
 
 .explore-actions .btn {
-  width: fit-content;
+  width: 100%;
+}
+
+.campaign-qr {
+  width: 100%;
+}
+
+.campaign-qr-toggle {
+  width: 100%;
+}
+
+.campaign-qr-panel {
+  margin-top: 10px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.campaign-qr-link {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #475467;
+  word-break: break-all;
+}
+
+.campaign-qr-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.campaign-qr-actions .btn {
+  flex: 1;
 }
 
 /* Campaign List Styles */

@@ -138,6 +138,7 @@ const UserDashboard = () => {
             <div className="donor-campaign-grid">
               {topCampaigns.map((campaign) => {
                 const isTargetReached = campaign.currentAmount >= campaign.targetAmount;
+                const progress = Math.min((campaign.currentAmount / campaign.targetAmount) * 100, 100);
                 return (
                   <div key={campaign._id} className="donor-campaign-card">
                     {campaign.image ? (
@@ -150,10 +151,19 @@ const UserDashboard = () => {
                       <div className="donor-campaign-placeholder">🎯</div>
                     )}
                     <div className="donor-campaign-body">
-                      <h4>{campaign.title.substring(0, 34)}</h4>
-                      <p>{campaign.description?.substring(0, 70)}...</p>
+                      <h4 className="donor-campaign-title">{campaign.title}</h4>
+                      <p className="donor-campaign-description">{campaign.description || "No description available."}</p>
+                      <div className="donor-campaign-progress">
+                        <div className="donor-progress-track">
+                          <div className="donor-progress-fill" style={{ width: `${progress}%` }} />
+                        </div>
+                        <div className="donor-progress-text">
+                          <span>₹{campaign.currentAmount.toLocaleString("en-IN")}</span>
+                          <span>of ₹{campaign.targetAmount.toLocaleString("en-IN")}</span>
+                        </div>
+                      </div>
                       <div className="donor-campaign-meta">
-                        <span>₹{campaign.currentAmount.toLocaleString("en-IN")}</span>
+                        <span className="donor-campaign-creator">by {campaign.creatorName || "Creator"}</span>
                         <button
                           className="btn btn-primary"
                           onClick={() => navigate(`/campaign/${campaign._id}/donate`)}
