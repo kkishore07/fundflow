@@ -23,10 +23,20 @@ const EditCampaign = () => {
   });
 
   const token = sessionStorage.getItem("token");
+  const sessionUserId = sessionStorage.getItem("userId");
+  const sessionRole = sessionStorage.getItem("role");
+  const currentUserId = user?.id || sessionUserId;
+  const isCreatorOrAdmin = sessionRole === "creator" || sessionRole === "admin";
 
   useEffect(() => {
-    if (!user) {
-      navigate("/");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    if (!isCreatorOrAdmin) {
+      toast.error("Creators only");
+      navigate("/user-dashboard");
       return;
     }
 
@@ -54,7 +64,7 @@ const EditCampaign = () => {
           ? data.campaign.creator._id || data.campaign.creator 
           : data.campaign.creator;
         
-        if (creatorId !== user.id) {
+        if (creatorId?.toString() !== currentUserId?.toString()) {
           toast.error("You can only edit your own campaigns");
           navigate("/active-campaigns");
           return;
@@ -90,7 +100,7 @@ const EditCampaign = () => {
     };
 
     fetchCampaign();
-  }, [campaignId, user, token, navigate]);
+  }, [campaignId, token, isCreatorOrAdmin, currentUserId, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

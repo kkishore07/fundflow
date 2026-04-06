@@ -204,25 +204,9 @@ const ActiveCampaigns = () => {
 
                     {/* QR Code for sharing approved campaigns */}
                     {campaign.status === "approved" && (
-                      <button 
-                        className="btn btn-success"
-                        style={{ width: "100%", padding: "8px 12px", fontSize: "13px", backgroundColor: "#28a745" }}
-                        onClick={() => {
-                          const el = document.getElementById(`qr-toggle-${campaign._id}`);
-                          if (el) el.click();
-                        }}
-                      >
-                        📱 Share QR Code
-                      </button>
+                      <CampaignQRCode campaignId={campaign._id} campaignTitle={campaign.title} />
                     )}
                   </div>
-
-                  {/* QR Code Component */}
-                  {campaign.status === "approved" && (
-                    <div style={{ marginTop: "8px", display: "none" }} id={`qr-toggle-${campaign._id}`}>
-                      <CampaignQRCode campaignId={campaign._id} campaignTitle={campaign.title} />
-                    </div>
-                  )}
                 </div>
               </div>
             ))}

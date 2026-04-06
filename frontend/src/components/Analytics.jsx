@@ -3,9 +3,49 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/api";
 import "../styles/campaign.css";
 
+const buildAnalyticsFromCampaigns = (campaigns) => {
+  const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
+  const totalCampaigns = safeCampaigns.length;
+  const approvedCampaigns = safeCampaigns.filter((campaign) => campaign.status === "approved").length;
+  const pendingCampaigns = safeCampaigns.filter((campaign) => campaign.status === "pending").length;
+  const rejectedCampaigns = safeCampaigns.filter((campaign) => campaign.status === "rejected").length;
+
+  const totalRaised = safeCampaigns.reduce((sum, campaign) => sum + (Number(campaign.currentAmount) || 0), 0);
+  const totalTarget = safeCampaigns.reduce((sum, campaign) => sum + (Number(campaign.targetAmount) || 0), 0);
+  const totalDonations = safeCampaigns.reduce((sum, campaign) => sum + (Number(campaign.donationCount) || 0), 0);
+  const averageProgress = totalTarget > 0 ? Number(((totalRaised / totalTarget) * 100).toFixed(1)) : 0;
+
+  const topCampaigns = safeCampaigns
+    .filter((campaign) => campaign.status === "approved")
+    .sort((first, second) => {
+      const firstTarget = Number(first.targetAmount) || 1;
+      const secondTarget = Number(second.targetAmount) || 1;
+      return (Number(second.currentAmount) || 0) / secondTarget - (Number(first.currentAmount) || 0) / firstTarget;
+    })
+    .slice(0, 5)
+    .map((campaign) => ({
+      _id: campaign._id,
+      title: campaign.title,
+      targetAmount: Number(campaign.targetAmount) || 0,
+      currentAmount: Number(campaign.currentAmount) || 0,
+      donationCount: Number(campaign.donationCount) || 0,
+    }));
+
+  return {
+    totalCampaigns,
+    approvedCampaigns,
+    pendingCampaigns,
+    rejectedCampaigns,
+    totalRaised,
+    totalTarget,
+    totalDonations,
+    averageProgress,
+    topCampaigns,
+  };
+};
+
 const Analytics = () => {
   const navigate = useNavigate();
-  const token = sessionStorage.getItem("token");
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,6 +55,8 @@ const Analytics = () => {
   }, []);
 
   const fetchAnalytics = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       if (!token) {
         navigate("/login");
@@ -33,14 +75,40 @@ const Analytics = () => {
         return;
       }
 
-      const data = await response.json();
       if (response.ok) {
+        const data = await response.json();
         setAnalytics(data);
-      } else {
-        setError(data.message || "Failed to fetch analytics");
+        setError("");
+        return;
       }
+
+      throw new Error("Primary analytics endpoint failed");
     } catch (err) {
-      setError("Error fetching analytics");
+      try {
+        const fallbackResponse = await fetch(`${API_URL}/api/campaigns/creator/my-campaigns`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (fallbackResponse.status === 401) {
+          sessionStorage.clear();
+          navigate("/login");
+          return;
+        }
+
+        const fallbackData = await fallbackResponse.json();
+        if (!fallbackResponse.ok) {
+          setError(fallbackData.message || "Failed to fetch analytics");
+          return;
+        }
+
+        const computedAnalytics = buildAnalyticsFromCampaigns(fallbackData.campaigns || []);
+        setAnalytics(computedAnalytics);
+        setError("");
+      } catch (fallbackError) {
+        setError("Error fetching analytics");
+      }
     } finally {
       setLoading(false);
     }

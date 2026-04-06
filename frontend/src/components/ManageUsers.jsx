@@ -8,6 +8,7 @@ const ManageUsers = () => {
   const { user, handleLogout } = useContext(GlobalContext);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const userName = user?.name || sessionStorage.getItem("userName");
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -19,6 +20,12 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     try {
       const token = sessionStorage.getItem("token");
+      if (!token) {
+        setError("Please login to view users.");
+        navigate("/login");
+        return;
+      }
+
       const response = await fetch(`${API_URL}/api/auth/users`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -29,11 +36,27 @@ const ManageUsers = () => {
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users || []);
+        setError("");
       } else {
-        console.error("Failed to fetch users");
+        const data = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+          sessionStorage.clear();
+          setError("Session expired. Please login again.");
+          navigate("/login");
+          return;
+        }
+
+        if (response.status === 403) {
+          setError("Access denied. Admin account required to view users.");
+          return;
+        }
+
+        setError(data.message || "Failed to fetch users");
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+      setError("Unable to load users. Please check backend connection.");
     } finally {
       setLoading(false);
     }
@@ -102,6 +125,8 @@ const ManageUsers = () => {
         </div>
 
         <div className="users-panel">
+          {error && <div className="alert alert-error" style={{ marginBottom: "12px" }}>{error}</div>}
+
           <div className="users-toolbar">
             <div className="users-search">
               <input
