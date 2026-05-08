@@ -1,11 +1,15 @@
-const mongoose = require('mongoose');
+const { pool, initializeSchema } = require('../src/models/sqlStore');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB connected: ${conn.connection.host}`);
+    // Test connection
+    await pool.query('SELECT NOW()');
+    console.log('PostgreSQL connected successfully');
+    
+    // Initialize schema
+    await initializeSchema();
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Database Error: ${error.message}`);
     process.exit(1);
   }
 };

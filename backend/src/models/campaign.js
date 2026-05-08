@@ -1,36 +1,24 @@
-const mongoose = require("mongoose");
+const db = require('./index');
 
-const campaignSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    targetAmount: { type: Number, required: true, min: 0 },
-    currentAmount: { type: Number, default: 0, min: 0 },
-    endDate: { type: Date, required: true },
-    isExpired: { type: Boolean, default: false },
-    creator: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
-    creatorName: { type: String, required: true },
-    status: { type: String, enum: ["pending", "approved", "rejected", "closed"], default: "pending" },
-    rejectionReason: { type: String, default: null },
-    image: { type: String, default: null }, // Image file path
-    averageRating: { type: Number, default: 0, min: 0, max: 5 },
-    totalRatings: { type: Number, default: 0, min: 0 },
-    ratings: [{
-      user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
-      rating: { type: Number, required: true, min: 1, max: 5 },
-      createdAt: { type: Date, default: Date.now }
-    }]
-  },
-  { timestamps: true }
-);
+// Campaign model wrapper for PostgreSQL
+const Campaign = {
+  create: (creatorId, title, description, targetAmount, category, imageUrl) => 
+    db.createCampaign(creatorId, title, description, targetAmount, category, imageUrl),
+  
+  findById: (id) => 
+    db.getCampaignById(id),
+  
+  findAll: (status = 'active') => 
+    db.getCampaigns(status),
+  
+  findByIdAndUpdate: (id, data) => 
+    db.updateCampaign(id, data),
 
-// Method to check if campaign has expired
-campaignSchema.methods.checkExpired = function() {
-  if (new Date() > this.endDate && !this.isExpired) {
-    this.isExpired = true;
-    return true;
-  }
-  return this.isExpired;
+  // Attach _id field for frontend compatibility
+  formatForFrontend: (campaign) => ({
+    ...campaign,
+    _id: campaign.id,
+  }),
 };
 
-module.exports = mongoose.model("campaigns", campaignSchema);
+module.exports = Campaign;

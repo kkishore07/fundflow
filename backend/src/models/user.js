@@ -1,12 +1,18 @@
-const mongoose = require("mongoose");
-const userSchema = new mongoose.Schema(
-  {
-    name: { type: String },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ["user", "creator", "admin"], default: "user" },
-  },
-  { timestamps: true }
-);
+const db = require('./index');
 
-module.exports = mongoose.model("users", userSchema);
+// User model wrapper for PostgreSQL
+const User = {
+  create: (email, name, password, role = 'user') => 
+    db.createUser(email, name, password, role),
+  
+  findById: (id) => 
+    db.getUserById(id),
+  
+  findByEmail: (email) => 
+    db.getUserByEmail(email),
+  
+  findByIdAndUpdate: (id, data) => 
+    db.updateUser(id, data),
+};
+
+module.exports = User;
